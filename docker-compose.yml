@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  app:
+    image: ticket-python-flask
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 5000:5000
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: password
