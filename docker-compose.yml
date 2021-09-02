@@ -8,6 +8,8 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - 5000:5000
+    volumes:
+      - .:/ticket_python_flask
 
   db:
     image: postgres

@@ -2,7 +2,9 @@ __version__ = '0.1.0'
 
 import os
 
-from flask import Flask
+from ticket_python_flask.models import Ticket
+
+from flask import Flask, json, url_for, render_template, abort, redirect, jsonify
 from flask_migrate import Migrate
 
 def create_app(test_config=None):
@@ -25,8 +27,44 @@ def create_app(test_config=None):
     db.init_app(app)
     migrate = Migrate(app, db)
 
+    from sqlalchemy import exc
+
+    @app.errorhandler(404)
+    def page_not_found(err):
+        return render_template('404.html')
+
     @app.route('/hello')
     def hello():
         return 'Hello, World'
+
+    @app.route('/')
+    def index():
+        return redirect(url_for('tickets'))
+
+    @app.route('/tickets')
+    def tickets():
+        tickets =Ticket.query.all()
+        return render_template('tickets_index.html', tickets=tickets)
+
+    @app.route('/tickets/<int:ticket_id>')
+    def tickets_show(ticket_id):
+        try:
+            ticket = Ticket.query.filter_by(id=ticket_id).one()
+            return render_template('tickets_show.html', ticket=ticket)
+        except exc.NoResultFound:
+            abort(404)
+
+    @app.route('/api/tickets')
+    def api_tickets():
+        tickets =Ticket.query.all()
+        return jsonify([ticket.to_json() for ticket in tickets])
+
+    @app.route('/api/tickets/<int:ticket_id>')
+    def api_tickets_show(ticket_id):
+        try:
+            ticket = Ticket.query.filter_by(id=ticket_id).one()
+            return jsonify(ticket.to_json())
+        except exc.NoResultFound:
+            return jsonify({'error': 'ticket not found'}), 404
 
     return app
